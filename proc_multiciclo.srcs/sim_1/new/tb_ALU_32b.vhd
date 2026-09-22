@@ -2,13 +2,13 @@
 -- Company: 
 -- Engineer: 
 -- 
--- Create Date: 22.09.2026 21:50:00
+-- Create Date: 22.09.2026 21:49:00
 -- Design Name: 
 -- Module Name: tb_ALU_32b - beh
 -- Project Name: 
 -- Target Devices: 
 -- Tool Versions: 
--- Description: Testbench para la ALU de 32 bits (Estilo adaptado)
+-- Description: 
 -- 
 -- Dependencies: 
 -- 
@@ -118,13 +118,13 @@ begin
    -- AND (0010)
    ALUctr <= "0010";
    A <= x"FFFFF000"; 
-   B <= x"000FFFFF";
+   B <= x"000FFFFF"; 
    wait for 50 ns;
    
    -- OR (0011)
    ALUctr <= "0011";
    A <= x"FFFFF000"; 
-   B <= x"000FFFFF";
+   B <= x"000FFFFF"; 
    wait for 50 ns;
    
    -- XOR (0100)
