@@ -8,7 +8,7 @@ Este repositorio documenta el diseño, simulación e implementación en VHDL de 
 ## Microarquitectura
 El diseño emplea una arquitectura multiciclo. Cada instrucción se divide en etapas lógicas secuenciales (Fetch, Decode, Execute, Memory Access y Write-back). Este enfoque minimiza el área requerida de hardware al permitir la reutilización de recursos críticos, como la memoria principal y la Unidad Aritmético Lógica (ALU), durante diferentes ciclos de reloj. utilizaré el siguiente esquema.
 
-<img width="1401" height="786" alt="image" src="https://github.com/user-attachments/assets/a969e57e-6e17-446b-bdda-8d6d809f142d" />
+<img width="1722" height="890" alt="image" src="https://github.com/user-attachments/assets/dadf7cc0-0441-4e38-b471-3ecf93c0bd60" />
 
 
 ## Instrucciones Implementadas (ISA)
