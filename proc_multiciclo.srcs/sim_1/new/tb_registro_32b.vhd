@@ -2,13 +2,13 @@
 -- Company: 
 -- Engineer: 
 -- 
--- Create Date: 22.09.2026 21:50:00
+-- Create Date: 18.09.2026 22:09:08
 -- Design Name: 
--- Module Name: tb_ALU_32b - beh
+-- Module Name: tb_registro_32b - Behavioral
 -- Project Name: 
 -- Target Devices: 
 -- Tool Versions: 
--- Description: Testbench para la ALU de 32 bits (Estilo adaptado)
+-- Description: 
 -- 
 -- Dependencies: 
 -- 
@@ -21,157 +21,80 @@
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.NUMERIC_STD.ALL;
 
-entity tb_ALU_32b is
-end tb_ALU_32b;
+-- Uncomment the following library declaration if using
+-- arithmetic functions with Signed or Unsigned values
+--use IEEE.NUMERIC_STD.ALL;
 
-architecture beh of tb_ALU_32b is
+-- Uncomment the following library declaration if instantiating
+-- any Xilinx leaf cells in this code.
+--library UNISIM;
+--use UNISIM.VComponents.all;
 
-component ALU_32b
-    Port(
-      A : IN STD_LOGIC_VECTOR (31 downto 0);
-      B : IN STD_LOGIC_VECTOR (31 downto 0);
-      ALUctr : IN STD_LOGIC_VECTOR (3 downto 0);
-      R : OUT STD_LOGIC_VECTOR (31 downto 0);
-      zero : OUT STD_LOGIC;
-      sign : OUT STD_LOGIC;
-      carry : OUT STD_LOGIC;
-      overflow : OUT STD_LOGIC
+entity tb_registro_32b is
+end tb_registro_32b;
+
+
+
+architecture beh of tb_registro_32b is
+
+component registro_32b
+   Port(
+      rst : IN STD_LOGIC;
+      clk : IN STD_LOGIC;
+      enable : IN STD_LOGIC;
+      input : IN STD_LOGIC_VECTOR(31 downto 0);
+      output : OUT STD_LOGIC_VECTOR(31 downto 0)
       );
 end component;
 
--- inputs
-signal A : STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-signal B : STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-signal ALUctr : STD_LOGIC_VECTOR(3 downto 0) := (others => '0');
--- outputs
-signal R : STD_LOGIC_VECTOR(31 downto 0);
-signal zero : STD_LOGIC;
-signal sign : STD_LOGIC;
-signal carry : STD_LOGIC;
-signal overflow : STD_LOGIC;
+--input
+signal rst : STD_LOGIC;
+signal clk : STD_LOGIC;
+signal enable : STD_LOGIC;
+signal i : STD_LOGIC_VECTOR(31 downto 0);
+--output
+signal o : STD_LOGIC_VECTOR(31 downto 0);
+   
+constant clk_period : time := 50ns;
 
 begin
 
-dut : ALU_32b port map (
-   A => A,
-   B => B,
-   ALUctr => ALUctr,
-   R => R,
-   zero => zero,
-   sign => sign,
-   carry => carry,
-   overflow => overflow
+dut : registro_32b port map (
+   rst => rst,
+   clk => clk,
+   enable => enable,
+   input => i,
+   output => o
 );
+
+p_clk : process
+begin
+   clk <= '0';
+   wait for clk_period/2;
+   clk <= '1';
+   wait for clk_period/2;
+end process;
 
 p_stim : process
 begin
-   -- =========================================================
-   -- SUMA (0000): Casos normales, Carry y Overflow
-   -- =========================================================
-   ALUctr <= "0000";
-   
-   -- Suma simple (1 + 2 = 3)
-   A <= x"00000001"; 
-   B <= x"00000002"; 
+   rst <= '1';
    wait for 50 ns;
-   
-   -- Suma que genera Carry sin signo (Max Unsigned + 1)
-   A <= x"FFFFFFFF"; 
-   B <= x"00000001"; 
-   wait for 50 ns;
-   
-   -- Suma con Overflow (Positivo + Positivo = Negativo)
-   A <= x"7FFFFFFF"; 
-   B <= x"00000001"; 
-   wait for 50 ns;
-   
-   -- Suma con Overflow (Negativo + Negativo = Positivo)
-   A <= x"80000000"; 
-   B <= x"80000000"; 
+   rst <= '0';
    wait for 50 ns;
 
-   -- =========================================================
-   -- RESTA (0001): Casos normales, Zero, Sign y Overflow
-   -- =========================================================
-   ALUctr <= "0001";
-   
-   -- Resta que da Zero -> zero = 1
-   A <= x"00000004"; 
-   B <= x"00000004"; 
-   wait for 50 ns;
-   
-   -- Resta que da negativo (5 - 10 = -5) -> sign = 1
-   A <= x"00000005"; 
-   B <= x"0000000A"; 
-   wait for 50 ns;
-   
-   -- Resta con Overflow (Negativo - Positivo = Positivo)
-   A <= x"80000000"; 
-   B <= x"00000001"; 
-   wait for 50 ns;
+   i <= x"AAAA5555";
+   enable <= '1';
+   wait for 100 ns; 
 
-   -- =========================================================
-   -- OPERACIONES LÓGICAS (0010, 0011, 0100)
-   -- =========================================================
-   -- AND (0010)
-   ALUctr <= "0010";
-   A <= x"FFFFF000"; 
-   B <= x"000FFFFF";
-   wait for 50 ns;
-   
-   -- OR (0011)
-   ALUctr <= "0011";
-   A <= x"FFFFF000"; 
-   B <= x"000FFFFF";
-   wait for 50 ns;
-   
-   -- XOR (0100)
-   ALUctr <= "0100";
-   A <= x"FFFFF000"; 
-   B <= x"000FFFFF"; 
-   wait for 50 ns;
+   enable <= '0';
+   i <= x"FFFF0000";
+   wait for 100 ns; 
 
-   -- =========================================================
-   -- COMPARACIONES (SLT y SLTU)
-   -- =========================================================
-   -- SLT (0101): Negativo < Positivo (-1 < 1) -> R = 1
-   ALUctr <= "0101";
-   A <= x"FFFFFFFF"; 
-   B <= x"00000001"; 
-   wait for 50 ns;
-   
-   -- SLT (0101): Falso Overflow (Extremos opuestos) -> R = 1
-   A <= x"80000000"; 
-   B <= x"7FFFFFFF"; 
-   wait for 50 ns;
-   
-   -- SLTU (0110): Max unsigned vs 1 (4.2B no es menor que 1) -> R = 0
-   ALUctr <= "0110";
-   A <= x"FFFFFFFF"; 
-   B <= x"00000001"; 
-   wait for 50 ns;
+   enable <= '1';
+   wait for 100 ns; 
 
-   -- =========================================================
-   -- DESPLAZAMIENTOS SHIFTS (0111, 1000, 1001)
-   -- =========================================================
-   A <= x"F0000000"; 
-   B <= x"00000004"; 
-   
-   -- SLL (0111)
-   ALUctr <= "0111"; 
-   wait for 50 ns;
-   
-   --  SRL (1000)
-   ALUctr <= "1000"; 
-   wait for 50 ns;
-   
-   -- SRA (1001)
-   ALUctr <= "1001"; 
-   wait for 50 ns;
-
-   wait;
+    wait;
 end process;
 
 end beh;

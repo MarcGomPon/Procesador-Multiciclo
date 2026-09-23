@@ -2,9 +2,9 @@
 -- Company: 
 -- Engineer: 
 -- 
--- Create Date: 18.09.2026 21:54:19
+-- Create Date: 23.09.2026 11:04:58
 -- Design Name: 
--- Module Name: registro_32b - Behavioral
+-- Module Name: mux2a1 - rtl
 -- Project Name: 
 -- Target Devices: 
 -- Tool Versions: 
@@ -31,29 +31,19 @@ use IEEE.STD_LOGIC_1164.ALL;
 --library UNISIM;
 --use UNISIM.VComponents.all;
 
-entity registro_32b is
-   Port(
-      rst : IN STD_LOGIC;
-      clk : IN STD_LOGIC;
-      enable : IN STD_LOGIC;
-      input : IN STD_LOGIC_VECTOR(31 downto 0);
+entity mux2a1 is
+   Port (
+      sel : IN STD_LOGiC; 
+      input0 : IN STD_LOGIC_VECTOR(31 downto 0);
+      input1 : IN STD_LOGIC_VECTOR(31 downto 0);
       output : OUT STD_LOGIC_VECTOR(31 downto 0)
-    );
-end registro_32b;
+   );
+end mux2a1;
 
-architecture rtl of registro_32b is
+architecture rtl of mux2a1 is
 
 begin
-process(clk, rst)
-begin
-   if (rst = '1') then 
-      output <= (others => '0');
-   elsif (rising_edge(clk)) then
-      if (enable = '1') then
-         output <= input;
-      end if;
-   end if;
-end process;
 
+   output <= input0 when (sel ='0') else input1;
 
 end rtl;
