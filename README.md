@@ -37,6 +37,8 @@ Las operaciones añadidas son:
 #### Saltos Incondicionales (Jumps)	jal, jalr
 #### Inmediatos Superiores	lui, auipc
 
+No se implementan las instrucciones de llamada a sistema ecall, ebreak y fence. Tampoco se implementa un control de excepciones, por lo que offsets mal asignados en funciones de acceso a memoria provocarán datos corruptos.
+
 ## Sobre el proyecto
 Este proyecto se ha desarrollado en VHDL usando IDE Vivado y esta diseñado para la tarjeta FPGA Basys3. En este repositorio se incluye la carpeta srcs que crea por defecto Vivado al empezar un proyecto con todos los archivos .vhd de las distintos módulos diseñados, así como sus respectivos testbench para simulación. 
 
