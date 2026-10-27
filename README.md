@@ -1,10 +1,17 @@
-# Procesador RISC-V Multiciclo (RV32I)
+# Procesador RISC-V Multiciclo (RV32I) en SoC
 
-Este repositorio documenta el diseño, simulación e implementación en VHDL de un procesador multiciclo de 32 bits basado en la arquitectura RISC-V. El objetivo del proyecto es construir una ruta de datos eficiente y una unidad de control robusta capaces de ejecutar código máquina real, enfocado a su síntesis en la tarjeta FPGA Basys3.
+Este repositorio documenta el diseño, simulación e implementación en VHDL de un procesador multiciclo de 32 bits basado en la arquitectura RISC-V. El objetivo del proyecto es construir una ruta de datos eficiente, una unidad de control robusta y una arquitectura SoC completa para su síntesis directa en la tarjeta FPGA Basys3 (Artix-7).
 
 ## Microarquitectura
 
 El diseño emplea una arquitectura multiciclo donde cada instrucción se divide en etapas lógicas secuenciales (Fetch, Decode, Execute, Memory Access y Write-back). Este enfoque minimiza el área de hardware requerida al permitir la reutilización de recursos críticos, como la memoria principal y la Unidad Aritmético Lógica (ALU), durante diferentes ciclos de reloj.
+
+### Arquitectura Jerárquica SoC
+Para garantizar un diseño escalable, el sistema está estructurado en dos niveles lógicos:
+
+**Core:** El módulo `ruta_de_datos.vhd` es un procesador puro. No contiene lógica de interacción física, operando exclusivamente mediante una señal limpia de `enable`.
+
+**`union.vhd`:** Actúa como la placa base del SoC. Se encarga de instanciar el procesador, limpiar el ruido físico de los pulsadores mediante un filtro antirrebotes (`debouncer`) de 10 ms, y extraer los datos de la ALU para inyectarlos en el controlador de los periféricos de salida.
 
 El esquema de la ruta de datos es el siguiente:
 
@@ -30,6 +37,7 @@ El comportamiento de las señales de control de la ALU y accesos a memoria se ge
 ## Decisiones de Diseño Destacadas
 * **Diseño Síncrono:** Se ha evitado el uso de clock gating, implementando en su lugar un control mediante señales de habilitación (`enable`) síncronas para garantizar una síntesis segura en FPGA al implemetar el modo debug.
 * **Extensión de Datos de Memoria (MDE):** Para soportar los accesos a memoria parciales, se diseñó un módulo MDE personalizado que gestiona la alineación y el manejo de los Offsets de forma transparente a la ruta principal.
+* **Interfaz Visual Multiplexada:** El SoC incluye un controlador VHDL (`display_7seg`) que actúa como divisor de frecuencia, utilizando un contador de 20 bits, para refrescar los 4 displays de 7 segmentos de la Basys3 a ~95 Hz. Esto permite visualizar el resultado hexadecimal de la ALU en tiempo real sin parpadeos perceptibles.
 
 ## Instrucciones Implementadas (ISA)
 
@@ -61,8 +69,18 @@ Se observa la correcta sincronización de la Unidad de Control orquestando la ru
 
 Este proyecto ha sido desarrollado en VHDL usando el IDE Vivado (configurado para IP cores en modo *Mixed language*). 
 
-Para usar los archivos en un proyecto nuevo:
+Opción recomendada (vía script TCL para control de versiones):
+1. Clona este repositorio.
+2. Abre la consola de comandos de Vivado (Tcl Console).
+3. Navega hasta el directorio raíz del repositorio clonado.
+4. Ejecuta el script de regeneración mediante el comando:
+   `source recrear_proyecto.tcl`
+5. Vivado reconstruirá automáticamente la jerarquía del proyecto, enlazará las fuentes VHDL, el banco de pruebas (simulación) y el archivo de restricciones físicas (`Basys3_Master.xdc`), dejándolo listo para síntesis, implementación y generación de *Bitstream*.
+
+Opción alternativa:
 1. Descarga el repositorio.
 2. Crea un proyecto nuevo en Vivado apuntando a la familia Artix-7 (FPGA Basys3).
 3. En el paso de añadir fuentes, selecciona "Add Directories" e importa la carpeta `proc_multiciclo.srcs`.
 4. Vivado detectará automáticamente las fuentes de diseño (`sources_1`) y los bancos de pruebas (`sim_1`).
+
+
