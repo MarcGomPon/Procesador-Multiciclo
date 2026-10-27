@@ -45,6 +45,7 @@ component unidad_de_control
    Port ( 
       clk      : IN STD_LOGIC;
       rst      : IN STD_LOGIC;
+      enable   : IN STD_LOGIC; -- Habilitador síncrono
       op       : IN STD_LOGIC_VECTOR (6 downto 0);
       func3    : IN STD_LOGIC_VECTOR (2 downto 0);
       func7    : IN STD_LOGIC;
@@ -60,6 +61,7 @@ end component;
 -- Inputs
 signal clk      : STD_LOGIC := '0';
 signal rst      : STD_LOGIC := '0';
+signal enable   : STD_LOGIC := '0';
 signal op       : STD_LOGIC_VECTOR(6 downto 0) := (others => '0');
 signal func3    : STD_LOGIC_VECTOR(2 downto 0) := (others => '0');
 signal func7    : STD_LOGIC := '0';
@@ -79,6 +81,7 @@ begin
 dut : unidad_de_control port map (
    clk      => clk,
    rst      => rst,
+   enable   => enable, -- NUEVO
    op       => op,
    func3    => func3,
    func7    => func7,
@@ -101,6 +104,7 @@ end process;
 p_stim : process
 begin
    -- Inicializamos entradas
+   enable   <= '1'; -- Mantenemos activo para que la máquina avance libremente
    op       <= (others => '0');
    func3    <= (others => '0');
    func7    <= '0';
@@ -189,7 +193,7 @@ begin
    wait for clk_period * 4;
 
    ---------------------------------------------------------
-   -- PRUEBA 10: Instrucción JALR
+   -- Instrucción JALR
    -- Estados: FETCH -> DECODE -> JALR_1 -> JALR_2 -> WB_ALU
    ---------------------------------------------------------
    op    <= "1100111";

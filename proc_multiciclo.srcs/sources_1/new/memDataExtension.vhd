@@ -36,26 +36,30 @@ entity MDE is
       mem_in       : IN  STD_LOGIC_VECTOR(31 downto 0); -- Viene de Memoria
       LoadSize     : IN  STD_LOGIC_VECTOR(1 downto 0);  -- Señal LS (2 bits)
       LoadUnsigned : IN  STD_LOGIC;                     -- Señal LU (1 bit)
+      Offset       : IN  STD_LOGIC_VECTOR(1 downto 0);  -- Offset de la parte seleccionada
       data_out     : OUT STD_LOGIC_VECTOR(31 downto 0)  -- Va hacia el MDR
    );
 end MDE;
 
 architecture rtl of MDE is
 signal data_temp : signed(31 downto 0);
+signal data_shifted : std_logic_vector(31 downto 0);
 
 begin
 
+data_shifted <= std_logic_vector(shift_right(unsigned(mem_in), to_integer(unsigned(Offset)) * 8)); 
+
 data_temp <= 
         -- Byte (8 bits)
-        signed(resize(unsigned(mem_in(7 downto 0)), 32)) when (LoadSize = "00" and LoadUnsigned = '1') else
-        resize(signed(mem_in(7 downto 0)), 32)           when (LoadSize = "00" and LoadUnsigned = '0') else
+        signed(resize(unsigned(data_shifted(7 downto 0)), 32)) when (LoadSize = "00" and LoadUnsigned = '1') else
+        resize(signed(data_shifted(7 downto 0)), 32)           when (LoadSize = "00" and LoadUnsigned = '0') else
         
         -- Halfword (16 bits)
-        signed(resize(unsigned(mem_in(15 downto 0)), 32)) when (LoadSize = "01" and LoadUnsigned = '1') else
-        resize(signed(mem_in(15 downto 0)), 32)           when (LoadSize = "01" and LoadUnsigned = '0') else
+        signed(resize(unsigned(data_shifted(15 downto 0)), 32)) when (LoadSize = "01" and LoadUnsigned = '1') else
+        resize(signed(data_shifted(15 downto 0)), 32)           when (LoadSize = "01" and LoadUnsigned = '0') else
         
         -- Word (32 bits)
-        signed(mem_in) when (LoadSize = "10") else
+        signed(data_shifted) when (LoadSize = "10") else
         
         (others => '0');
         

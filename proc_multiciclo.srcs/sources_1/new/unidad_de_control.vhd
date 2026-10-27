@@ -35,6 +35,7 @@ entity unidad_de_control is
    Port ( 
       clk : IN STD_LOGIC;
       rst : IN STD_LOGIC;
+      enable : IN STD_LOGIC;
       
       op : IN STD_LOGIC_VECTOR (6 downto 0);
       func3 : IN STD_LOGIC_VECTOR (2 downto 0);
@@ -321,7 +322,10 @@ begin
    process(clk, rst)
    begin
       if (rst = '1') then currentState <= S_FETCH;
-      elsif rising_edge(clk) then currentState <= nextState;
+      elsif rising_edge(clk) then 
+         if (enable = '1') 
+            then currentState <= nextState;
+         end if;
       end if;
    end process state;
 end rtl;
