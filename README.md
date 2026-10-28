@@ -17,6 +17,10 @@ El esquema de la ruta de datos es el siguiente:
 
 <img width="1722" height="890" alt="Ruta de datos" src="https://github.com/user-attachments/assets/dadf7cc0-0441-4e38-b471-3ecf93c0bd60" />
 
+**Documentación técnica:**
+-  [Esquemático RTL (Lógico)](docs/esquematico_rtl.pdf)
+-  [Esquemático de Síntesis (Hardware físico)](docs/esquematico_sintesis.pdf)
+
 ### Unidad de Control (FSM)
 El controlador es una máquina de estados finitos (FSM) que orquesta la ejecución. Su comportamiento se define mediante las siguientes tablas de transición y salida:
 
@@ -65,22 +69,48 @@ Se observa la correcta sincronización de la Unidad de Control orquestando la ru
 1. **Transición de la FSM:** Se aprecian los saltos condicionales de la máquina de estados según el tipo de instrucción, pasando por el estado `05` para ejecutar la instrucción tipo U, y por el estado `03` para la instrucción tipo I, finalizando ambas en el estado de Write-back (`10`).
 2. **Cálculo en la ALU:** En la etapa de ejecución de la suma inmediata (`addi`), el multiplexor enruta correctamente el operando `SrcA` (00000000) y el inmediato `SrcB` (0000000f), resolviendo el cálculo en `ALU_res` de forma síncrona.
 
+### Ejecución en FPGA (Basys 3)
+El procesador ejecuta programas de prueba en código máquina, mostrando los resultados de la ALU en el display de 7 segmentos. A continuación se muestran los resultados obtenidos en diferentes ciclos de ejecución:
+
+<img width="4032" height="3024" alt="20261028_123853" src="https://github.com/user-attachments/assets/cc377d89-9176-4f91-901e-cbe0e22f2f38" />
+
+> **Ciclo 9:** Estado de búsqueda de instrucción (S_FETCH, LEDs en 00000) para la instrucción addi. El display retiene el último valor calculado por la ALU en el ciclo anterior (0004, correspondiente a auipc).
+
+<img width="4032" height="3024" alt="20261028_123858" src="https://github.com/user-attachments/assets/cc6eca41-6851-4cfc-a59d-e124e442db53" />
+
+> **Ciclo 10:** Fase de decodificación (S_DECODE, LEDs en 00001) de la instrucción addi x3, x0, 15. El procesador está leyendo el banco de registros (operando x0). El display mantiene el valor previo de la ALU (0004) a la espera de la fase de ejecución.
+
+<img width="4032" height="3024" alt="20261028_123902" src="https://github.com/user-attachments/assets/d1022212-8bff-4057-8ec2-e175e624204a" />
+
+> **Ciclo 11:** Fase de ejecución (S_EX_I, LEDs en 00011) de la instrucción addi x3, x0, 15. La ALU está calculando la suma del inmediato. El display muestra temporalmente 0004, reteniendo el valor del ciclo anterior a la espera de que el nuevo resultado se guarde en el registro de salida de la ALU.
+
+<img width="4032" height="3024" alt="20261028_123905" src="https://github.com/user-attachments/assets/83943c35-9fd3-4c01-b1c7-f2b2c9530845" />
+
+> **Ciclo 12:** Fase de Write-Back (S_WB_ALU, LEDs en 10000) de la instrucción addi x3, x0, 15. El registro de salida de la ALU captura el cálculo del ciclo previo y el display se actualiza reflejando el nuevo resultado: 000F.
+
+
+
+
 ## Reproducción del Proyecto
 
 Este proyecto ha sido desarrollado en VHDL usando el IDE Vivado (configurado para IP cores en modo *Mixed language*). 
 
-Opción recomendada (vía script TCL para control de versiones):
-1. Clona este repositorio.
+Para garantizar una clonación limpia y evitar problemas con rutas absolutas o archivos generados pesados, se recomienda utilizar el script de regeneración.
+
+**Pasos de instalación:**
+
+1. Clona este repositorio:
+   ```bash
+   git clone https://github.com/MarcGomPon/Procesador-Multiciclo.git
+   cd Procesador-Multiciclo
+   ```
 2. Abre la consola de comandos de Vivado (Tcl Console).
 3. Navega hasta el directorio raíz del repositorio clonado.
 4. Ejecuta el script de regeneración mediante el comando:
-   `source recrear_proyecto.tcl`
-5. Vivado reconstruirá automáticamente la jerarquía del proyecto, enlazará las fuentes VHDL, el banco de pruebas (simulación) y el archivo de restricciones físicas (`Basys3_Master.xdc`), dejándolo listo para síntesis, implementación y generación de *Bitstream*.
-
-Opción alternativa:
-1. Descarga el repositorio.
-2. Crea un proyecto nuevo en Vivado apuntando a la familia Artix-7 (FPGA Basys3).
-3. En el paso de añadir fuentes, selecciona "Add Directories" e importa la carpeta `proc_multiciclo.srcs`.
-4. Vivado detectará automáticamente las fuentes de diseño (`sources_1`) y los bancos de pruebas (`sim_1`).
+   ```tcl
+   source build.tcl
+   ```
+   *(Nota: asegúrate de nombrar tu script como `build.tcl` o adapta el comando al nombre real).*
+5. Vivado reconstruirá automáticamente la jerarquía del proyecto, enlazará las fuentes VHDL, el banco de pruebas y el archivo de restricciones físicas (`.xdc`), dejándolo listo para síntesis, implementación y generación de *Bitstream*.
 
 
